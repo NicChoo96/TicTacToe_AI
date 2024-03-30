@@ -28,7 +28,8 @@ def check_condition(player, board):
     return condition
 
 def AI_decision_turn(winning_condition, board, player_turn, game_history):
-    ONE_ENEMY_POS = 5
+    MIX_POS = 5
+    ONE_ENEMY_POS = 1
     TWO_ENEMY_POS = 30
     ONE_PLAYER_POS = 2
     TWO_PLAYER_POS = 100
@@ -51,7 +52,9 @@ def AI_decision_turn(winning_condition, board, player_turn, game_history):
         for pos in conditions:
             if pos not in pos_taken:
                 # No need to defend against 1 enemy pos, so lesser attention
-                if enemy_counter == 1:
+                if enemy_counter == 1 and player_counter == 1:
+                    all_pos[pos] -= MIX_POS
+                elif enemy_counter == 1:
                     all_pos[pos] += ONE_ENEMY_POS
                 # Prioritise in defending winning enemy
                 elif enemy_counter == 2:
@@ -138,7 +141,7 @@ def AI_vs_AI():
                 player_turn = "O"
             else:
                 player_turn = "X"
-    print(game_history)
+    print(f"game_history: {game_history}")
     render_board(board)
     return {"board": board, "game_status": game_status}
 
@@ -161,7 +164,7 @@ def AI_games():
             O_win += 1
         else:
             draw_counter += 1
-    print(f'{game_count} Games Status: X Win: {X_win}, O Wins: {O_win}, Draw: {draw_counter}')
+    print(f'{game_count} Games Played, Status: X Win: {X_win}, O Wins: {O_win}, Draw: {draw_counter}')
 
 print("Specify which mode to play\n(1) player vs AI \n(2) AI vs AI:")
 mode = input()
