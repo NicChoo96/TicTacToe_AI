@@ -27,7 +27,12 @@ def check_condition(player, board):
         return condition
     return condition
 
-def AI_decision_turn(winning_condition, board, player_turn):
+def AI_decision_turn(winning_condition, board, player_turn, game_history):
+    ONE_ENEMY_POS = 5
+    TWO_ENEMY_POS = 30
+    ONE_PLAYER_POS = 2
+    TWO_PLAYER_POS = 100
+    
     pos_taken = {key: True for key, value in board.items() if value != " "}
 
     all_pos = {key: 0 for key in board}
@@ -47,16 +52,16 @@ def AI_decision_turn(winning_condition, board, player_turn):
             if pos not in pos_taken:
                 # No need to defend against 1 enemy pos, so lesser attention
                 if enemy_counter == 1:
-                    all_pos[pos] += 1
+                    all_pos[pos] += ONE_ENEMY_POS
                 # Prioritise in defending winning enemy
                 elif enemy_counter == 2:
-                    all_pos[pos] += 10
+                    all_pos[pos] += TWO_ENEMY_POS
                 # Let AI have higher priority to put 2 in a line
                 if player_counter == 1:
-                    all_pos[pos] += 2
+                    all_pos[pos] += ONE_PLAYER_POS
                 # Highest priority for AI to win
                 elif player_counter == 2:
-                    all_pos[pos] += 30
+                    all_pos[pos] += TWO_PLAYER_POS
     # Shuffle all keys for equal move reward for unpredictable AI moves
     all_pos_keys = list(all_pos.keys())
     random.shuffle(all_pos_keys)
@@ -66,6 +71,7 @@ def AI_decision_turn(winning_condition, board, player_turn):
     #print(f'AllPos: {all_pos}, Sorted: {sorted_pos}')
     # Change board to AI
     board[sorted_pos[0]] = player_turn
+    game_history.append({"player": player_turn, "pos": sorted_pos[0]})
 
 def rdr(player, index):
     return player if player != " " else index
@@ -91,14 +97,15 @@ def player_vs_AI():
     game_completed = False
     player_turn = "X"
     board = reset_board()
+    game_history = []
 
     while not game_completed:
         render_board(board)
         if player_turn == "X":
            user_turn(player_turn, board)
         else:
-           AI_decision_turn(winning_condition, board, player_turn)
-        render_board(board)
+           AI_decision_turn(winning_condition, board, player_turn, game_history)
+           print("AI has made a move")
         print("-------------------------------------------------------------------------------------------")
         game_status = check_condition(player_turn, board)
         if game_status["message"] != "":
@@ -117,9 +124,10 @@ def AI_vs_AI():
     game_completed = False
     player_turn = "X"
     board = reset_board()
+    game_history = []
 
     while not game_completed:
-        AI_decision_turn(winning_condition, board, player_turn)
+        AI_decision_turn(winning_condition, board, player_turn, game_history)
         game_status = check_condition(player_turn, board)
         if game_status["message"] != "":
             print(game_status["message"])
@@ -130,6 +138,7 @@ def AI_vs_AI():
                 player_turn = "O"
             else:
                 player_turn = "X"
+    print(game_history)
     render_board(board)
     return {"board": board, "game_status": game_status}
 
@@ -146,15 +155,13 @@ def AI_games():
     O_win = 0
     draw_counter = 0
     for i in range(game_count):
-        print(games_board[i]["board"])
-        print(games_board[i])
         if games_board[i]["game_status"]["status"] == "X":
             X_win += 1
         elif games_board[i]["game_status"]["status"] == "O":
             O_win += 1
         else:
             draw_counter += 1
-        print(f'{game_count} Games Status: X Win: {X_win}, O Wins: {O_win}, Draw: {draw_counter}')
+    print(f'{game_count} Games Status: X Win: {X_win}, O Wins: {O_win}, Draw: {draw_counter}')
 
 print("Specify which mode to play\n(1) player vs AI \n(2) AI vs AI:")
 mode = input()
